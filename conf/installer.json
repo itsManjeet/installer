@@ -1,0 +1,11 @@
+{
+    "root": "",
+    "boot": "",
+    "is-efi": false,
+    "system-image": "/run/iso/rootfs.img",
+    "system-version": "@VERSION@",
+    "mimimum-ram": 2,
+    "minimum-disk": 10,
+    "root-label": "rlxos",
+    "boot-label": "EFI"
+}

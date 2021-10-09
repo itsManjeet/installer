@@ -1,4 +1,4 @@
-package main
+package installer
 
 const UI = `<?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.38.2 -->

@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -11,8 +12,19 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/rlxos/installer/disk"
 	"github.com/shirou/gopsutil/mem"
 )
+
+func (instlr *Installer) getBlockDevices() (*disk.BlockDevices, error) {
+	data, err := exec.Command("lsblk", "-J", "-O").Output()
+	if err != nil {
+		return nil, err
+	}
+	var blockDevices disk.BlockDevices
+	err = json.Unmarshal(data, &blockDevices)
+	return &blockDevices, err
+}
 
 // return total system memory
 func (instlr Installer) verifySystemMemory() {

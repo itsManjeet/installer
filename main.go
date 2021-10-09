@@ -7,7 +7,7 @@ import (
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
-	"github.com/rlxos/installer/internal/installer"
+	"github.com/rlxos/installer/installer"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 	application.Connect("activate", func() {
 		log.Println("Activating installer")
 
-		builder, err := gtk.BuilderNewFromString(UI)
+		builder, err := gtk.BuilderNewFromString(installer.UI)
 		checkError(err)
 
 		instlr := installer.Init(builder)

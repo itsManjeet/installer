@@ -7,31 +7,44 @@ import (
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/rlxos/installer/app"
 	"github.com/rlxos/installer/installer"
+	"github.com/rlxos/installer/setup"
+)
+
+const (
+	APPID = "dev.rlxos.setup"
 )
 
 func main() {
-	application, err := gtk.ApplicationNew("dev.rlxos.installer", glib.APPLICATION_FLAGS_NONE)
+	application, err := gtk.ApplicationNew(APPID, glib.APPLICATION_FLAGS_NONE)
 	checkError(err)
 
 	application.Connect("startup", func() {
-		log.Println("Starting up installer")
+		log.Println("Starting up", APPID)
 		/// TODO pre configurations
 	})
 
 	application.Connect("activate", func() {
-		log.Println("Activating installer")
+		log.Println("Activating", APPID)
 
-		builder, err := gtk.BuilderNewFromString(installer.UI)
+		builder, err := gtk.BuilderNewFromString(app.UI)
 		checkError(err)
 
-		instlr := installer.Init(builder)
-		instlr.Window.ShowAll()
-		application.AddWindow(instlr.Window)
+		if len(os.Getenv("INSTALLER")) == 0 {
+			app := setup.Init(builder)
+			app.Window.ShowAll()
+			application.AddWindow(app.Window)
+		} else {
+			installer := installer.Init(builder)
+			installer.Window.ShowAll()
+			application.AddWindow(installer.Window)
+		}
+
 	})
 
 	application.Connect("shutdown", func() {
-		log.Println("Shutting down installer")
+		log.Println("Shutting down", APPID)
 	})
 
 	os.Exit(application.Run(os.Args))

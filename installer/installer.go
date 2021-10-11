@@ -1,96 +1,38 @@
 package installer
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
-	"os"
-	"os/exec"
-
-	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/rlxos/installer/app"
+	"github.com/rlxos/installer/disk"
 )
 
-const CONFIG_FILE = "/etc/installer.json"
-
 type Installer struct {
-	ui *gtk.Builder
+	*app.App
 
-	stack  *gtk.Stack
-	Window *gtk.Window
-
-	statusBuffer *gtk.TextBuffer
-	progressBar  *gtk.ProgressBar
-
-	RootDevice string `json:"root"`
-	BootDevice string `json:"boot"`
-	RootUUID   string
-
-	cleanup func()
-
-	IsEfi bool `json:"is-efi"`
-
-	SystemImage   string `json:"system-image"`
-	SystemVersion string `json:"system-version"`
-
-	RootDeviceLabel string `json:"root-label"`
-	BootDeviceLabel string `json:"boot-label"`
-
-	RootFSType string `json:"root-fs-type"`
-	BootFSType string `json:"boot-fs-type"`
-
-	MinimumRam  int `json:"mimimum-ram"`
-	MinimumDisk int `json:"mimimum-disk"`
-
-	signals map[string]interface{}
+	devices disk.BlockDevices
+	tempdir string
 }
 
 func Init(ui *gtk.Builder) *Installer {
-	var installer Installer
+	var in Installer
 
-	if _, err := os.Stat(CONFIG_FILE); os.IsNotExist(err) {
-		installer.checkError(fmt.Errorf("no configuration file found %v", err))
+	in.App = app.Create(ui)
 
-	} else {
-		if data, err := os.ReadFile(CONFIG_FILE); err == nil {
-			json.Unmarshal(data, &installer)
-		} else {
-			installer.checkError(err)
-		}
+	in.ID = ID
+	in.Title = TITLE
+	in.WelcomeMesg = WELCOME_MESG
+	in.ProcessTitle = PROCESS_TITLE
+	in.ProcessMesg = PROCESS_DESC
+	in.SuccessMesg = SUCCESS_MESG
+	in.SuccessBtn = SUCCESS_BTN
+
+	in.Initialize()
+
+	in.Stages = map[string]func() error{
+		"Reading System Configurations": in.StageSysConfig,
+		"Verify System Memory":          in.StageVerifyMemory,
+		"Installing System":             in.StageInstall,
 	}
 
-	installer.ui = ui
-	installer.Window = installer.getWidget("mainWindow").(*gtk.Window)
-	installer.stack = installer.getWidget("stack").(*gtk.Stack)
-
-	installer.statusBuffer = installer.getWidget("statusBuffer").(*gtk.TextBuffer)
-	installer.progressBar = installer.getWidget("progressBar").(*gtk.ProgressBar)
-
-	installer.signals = map[string]interface{}{
-		"onDestroy":            installer.onDestroy,
-		"onContinueBtnClicked": installer.onContinueBtnClicked,
-		"onRebootBtnClicked":   installer.onRebootBtnClicked,
-	}
-
-	installer.ui.ConnectSignals(installer.signals)
-	installer.Window.SetPosition(gtk.WIN_POS_CENTER_ALWAYS)
-
-	return &installer
-}
-
-func (inst *Installer) getWidget(id string) glib.IObject {
-	obj, err := inst.ui.GetObject(id)
-	inst.checkError(err)
-	return obj
-}
-
-func (instlr Installer) checkError(err error) {
-	if err != nil {
-		log.Println("EE", err.Error())
-		exec.Command("/bin/zenity", "--error", "--text", err.Error()).Run()
-		if instlr.cleanup != nil {
-			instlr.cleanup()
-		}
-		os.Exit(1)
-	}
+	return &in
 }

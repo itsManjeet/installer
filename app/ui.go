@@ -1,4 +1,4 @@
-package installer
+package app
 
 const UI = `<?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.38.2 -->
@@ -7,8 +7,10 @@ const UI = `<?xml version="1.0" encoding="UTF-8"?>
   <object class="GtkTextBuffer" id="statusBuffer"/>
   <object class="GtkWindow" id="mainWindow">
     <property name="can-focus">False</property>
+    <property name="resizable">False</property>
     <property name="default-width">800</property>
     <property name="default-height">600</property>
+    <property name="deletable">False</property>
     <child>
       <object class="GtkStack" id="stack">
         <property name="visible">True</property>
@@ -56,12 +58,12 @@ const UI = `<?xml version="1.0" encoding="UTF-8"?>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="welcomeMesgLbl">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="margin-top">2</property>
                 <property name="margin-bottom">15</property>
-                <property name="label" translatable="yes">Click 'Continue' to start installation</property>
+                <property name="label" translatable="yes">{{ WELCOME MESG }}</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -71,20 +73,15 @@ const UI = `<?xml version="1.0" encoding="UTF-8"?>
             </child>
             <child>
               <object class="GtkButton">
+                <property name="label" translatable="yes">Continue</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
                 <signal name="clicked" handler="onContinueBtnClicked" swapped="no"/>
-                <child>
-                  <object class="GtkImage">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="stock">gtk-go-forward</property>
-                  </object>
-                </child>
                 <style>
+                  <class name="suggested-action"/>
                   <class name="circular"/>
                 </style>
               </object>
@@ -111,7 +108,7 @@ const UI = `<?xml version="1.0" encoding="UTF-8"?>
                 <property name="can-focus">False</property>
                 <property name="margin-top">17</property>
                 <property name="margin-bottom">12</property>
-                <property name="icon-name">download-symbolic</property>
+                <property name="icon-name">settings</property>
                 <property name="icon_size">6</property>
               </object>
               <packing>
@@ -121,10 +118,10 @@ const UI = `<?xml version="1.0" encoding="UTF-8"?>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="processNameLbl">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Installation</property>
+                <property name="label" translatable="yes">{{ PROCESS NAME }}</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                   <attribute name="scale" value="1.8"/>
@@ -137,11 +134,11 @@ const UI = `<?xml version="1.0" encoding="UTF-8"?>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="processDescLbl">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="margin-bottom">20</property>
-                <property name="label" translatable="yes">rlxos is now setting up into your system</property>
+                <property name="label" translatable="yes">{{ PROCESS DESCRIPTION }}</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -194,8 +191,6 @@ const UI = `<?xml version="1.0" encoding="UTF-8"?>
             <property name="can-focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
-            <property name="margin-left">71</property>
-            <property name="margin-right">71</property>
             <property name="margin-start">71</property>
             <property name="margin-end">71</property>
             <property name="margin-bottom">66</property>
@@ -231,13 +226,12 @@ const UI = `<?xml version="1.0" encoding="UTF-8"?>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="successDescLbl">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="margin-top">2</property>
                 <property name="margin-bottom">15</property>
-                <property name="label" translatable="yes">rlxos is now successfully configured, 
-you can now reboot into your freshly configured system</property>
+                <property name="label" translatable="yes">{{ SUCCESS MESG }}</property>
                 <property name="justify">center</property>
               </object>
               <packing>
@@ -247,14 +241,14 @@ you can now reboot into your freshly configured system</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">reboot</property>
+              <object class="GtkButton" id="successBtn">
+                <property name="label" translatable="yes">{{ SUCCESS BUTTON }}</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
-                <signal name="clicked" handler="onRebootBtnClicked" swapped="no"/>
+                <signal name="clicked" handler="onSuccessBtnClicked" swapped="no"/>
                 <style>
                   <class name="suggested-action"/>
                   <class name="circular"/>
@@ -279,7 +273,7 @@ you can now reboot into your freshly configured system</property>
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">System Installer</property>
+        <property name="title" translatable="yes">{{ TITLE }}</property>
       </object>
     </child>
   </object>

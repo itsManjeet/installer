@@ -2,7 +2,7 @@
 
 _UI="$(cat ${1})"
 
-echo "package main
+echo "package app
 
-const UI = \`${_UI}\`" > ui.go
+const UI = \`${_UI}\`" > app/ui.go
 

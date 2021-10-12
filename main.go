@@ -1,9 +1,11 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
@@ -31,7 +33,10 @@ func main() {
 		builder, err := gtk.BuilderNewFromString(app.UI)
 		checkError(err)
 
-		if len(os.Getenv("INSTALLER")) == 0 {
+		cmdline, err := ioutil.ReadFile("/proc/cmdline")
+		checkError(err)
+
+		if strings.Contains(string(cmdline), "iso=1") {
 			app := setup.Init(builder)
 			app.Window.ShowAll()
 			application.AddWindow(app.Window)

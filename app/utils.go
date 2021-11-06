@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/gotk3/gotk3/glib"
@@ -18,7 +19,7 @@ func (app *App) DisplayText(mesg string) {
 }
 
 func (app *App) StartProcess(mesg string) {
-	app.DisplayText(fmt.Sprintf("○ %s - ", mesg))
+	app.DisplayText(fmt.Sprintf("○ %s%s\t", mesg, strings.Repeat(" ", (app.maxMessageSize-len(mesg)))))
 	log.Println(mesg)
 	// FOR BETTER UX...
 	time.Sleep(time.Millisecond * 200)

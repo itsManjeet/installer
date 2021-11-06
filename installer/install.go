@@ -59,18 +59,23 @@ func (in *Installer) installImage(imagePath, deviceNode string) error {
 	in.tempdir = tempdir
 
 	log.Printf("Mounting %s %s\n", deviceNode, tempdir)
-	if err := exec.Command("mount", deviceNode, tempdir).Run(); err != nil {
-		return err
+	if !in.IsDebug() {
+		if err := exec.Command("mount", deviceNode, tempdir).Run(); err != nil {
+			return err
+		}
 	}
-
 	log.Println("Creating directories")
-	if err := os.MkdirAll(path.Join(tempdir, "rlxos", "system"), 0755); err != nil {
-		return err
+	if !in.IsDebug() {
+		if err := os.MkdirAll(path.Join(tempdir, "rlxos", "system"), 0755); err != nil {
+			return err
+		}
 	}
 
 	log.Println("Copying squash")
-	if err := exec.Command("cp", imagePath, path.Join(tempdir, "rlxos", "system", VERSION)).Run(); err != nil {
-		return err
+	if !in.IsDebug() {
+		if err := exec.Command("cp", imagePath, path.Join(tempdir, "rlxos", "system", VERSION)).Run(); err != nil {
+			return err
+		}
 	}
 
 	return in.installBootloader(tempdir, deviceNode)
@@ -98,8 +103,10 @@ func (in *Installer) installBootloader(rootdir string, rootdevice string) error 
 		args = append(args, BootDevice)
 	} else {
 		efidir := path.Join(bootdir, "efi")
-		if err := os.MkdirAll(efidir, 0755); err != nil {
-			return err
+		if !in.IsDebug() {
+			if err := os.MkdirAll(efidir, 0755); err != nil {
+				return err
+			}
 		}
 
 		BootDevice := ""
@@ -129,16 +136,21 @@ func (in *Installer) installBootloader(rootdir string, rootdevice string) error 
 		}
 
 		log.Println("mounting boot device ", BootDevice)
-		if err := exec.Command("/bin/mount", BootDevice, efidir).Run(); err != nil {
-			return err
+		if !in.IsDebug() {
+			if err := exec.Command("/bin/mount", BootDevice, efidir).Run(); err != nil {
+				return err
+			}
 		}
+
 		args = append(args, "--bootloader-id=rlx")
 	}
 
 	log.Println("installing grub")
-	err := exec.Command("/bin/grub-install", args...).Run()
-	if err != nil {
-		return err
+	if !in.IsDebug() {
+		err := exec.Command("/bin/grub-install", args...).Run()
+		if err != nil {
+			return err
+		}
 	}
 
 	var UUID string
@@ -174,16 +186,19 @@ menuentry 'rlxos inital setup' {
 	initrd /boot/initrd
 }`
 
-	if err := os.WriteFile(path.Join(rootdir, "boot", "grub", "grub.cfg"), []byte(grubcfg), 0644); err != nil {
-		return err
-	}
+	if !in.IsDebug() {
+		if err := os.WriteFile(path.Join(rootdir, "boot", "grub", "grub.cfg"), []byte(grubcfg), 0644); err != nil {
+			return err
+		}
 
-	if err := exec.Command("/bin/cp", "/run/iso/boot/vmlinuz", path.Join(rootdir, "boot", "vmlinuz")).Run(); err != nil {
-		return err
-	}
+		if err := exec.Command("/bin/cp", "/run/iso/boot/vmlinuz", path.Join(rootdir, "boot", "vmlinuz")).Run(); err != nil {
+			return err
+		}
 
-	if err := exec.Command("/bin/cp", "/run/iso/boot/initrd", path.Join(rootdir, "boot", "initrd")).Run(); err != nil {
-		return err
+		if err := exec.Command("/bin/cp", "/run/iso/boot/initrd", path.Join(rootdir, "boot", "initrd")).Run(); err != nil {
+			return err
+		}
+
 	}
 
 	return nil

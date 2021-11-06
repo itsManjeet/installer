@@ -28,11 +28,9 @@ func Init(ui *gtk.Builder) *Installer {
 
 	in.Initialize()
 
-	in.Stages = map[string]func() error{
-		"Reading System Configurations": in.StageSysConfig,
-		"Verify System Memory":          in.StageVerifyMemory,
-		"Installing System":             in.StageInstall,
-	}
+	in.AddStage("Reading System Configurations", in.StageSysConfig)
+	in.AddStage("Verify System Memory", in.StageVerifyMemory)
+	in.AddStage("Installing System", in.StageInstall)
 
 	return &in
 }

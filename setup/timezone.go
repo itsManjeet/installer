@@ -35,7 +35,12 @@ func (setup *Setup) StageTimezone() error {
 		}
 		if len(selected) != 0 {
 			log.Println("TIMEZONE", selected)
-			return setup.SetupTimeZone(selected)
+			if !setup.IsDebug() {
+				return setup.SetupTimeZone(selected)
+			} else {
+				return nil
+			}
+
 		}
 	}
 }

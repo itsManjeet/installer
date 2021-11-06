@@ -35,7 +35,10 @@ type App struct {
 	StatusBuffer *gtk.TextBuffer
 	ProgressBar  *gtk.ProgressBar
 
-	Stages map[string]func() error
+	stages_index []string
+	stages       map[string]func() error
+
+	maxMessageSize int
 }
 
 func Create(ui *gtk.Builder) *App {
@@ -62,7 +65,7 @@ func Create(ui *gtk.Builder) *App {
 		"onContinueBtnClicked": app.onContinueBtnClicked,
 	}
 
-	app.Stages = map[string]func() error{
+	app.stages = map[string]func() error{
 		"Initializing": func() error {
 			return errors.New("not yet implemented")
 		},
@@ -95,4 +98,21 @@ func (applr App) checkError(err error) {
 		exec.Command("/bin/zenity", "--error", "--text", err.Error()).Run()
 		os.Exit(1)
 	}
+}
+
+func (app *App) AddStage(id string, callback func() error) {
+
+	if app.maxMessageSize < len(id) {
+		app.maxMessageSize = len(id)
+	}
+
+	if app.stages_index == nil {
+		app.stages_index = make([]string, 0)
+	}
+	app.stages_index = append(app.stages_index, id)
+
+	if app.stages == nil {
+		app.stages = make(map[string]func() error)
+	}
+	app.stages[id] = callback
 }

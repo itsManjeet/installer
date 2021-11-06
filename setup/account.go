@@ -29,9 +29,11 @@ func (setup *Setup) CreateAccount(username, password string) error {
 	password = strings.TrimSpace(string(passwordBytes))
 
 	log.Println("Creating Admin User")
-	if err := exec.Command("useradd", "-m", "-g", "users", "-G", "adm", username, "-p", password).Run(); err != nil {
-		return err
-	}
+	if !setup.IsDebug() {
+		if err := exec.Command("useradd", "-m", "-g", "users", "-G", "adm", username, "-p", password).Run(); err != nil {
+			return err
+		}
 
+	}
 	return nil
 }

@@ -18,12 +18,19 @@ const (
 	APPID = "dev.rlxos.setup"
 )
 
+var (
+	commandLine string
+)
+
 func main() {
 	application, err := gtk.ApplicationNew(APPID, glib.APPLICATION_FLAGS_NONE)
 	checkError(err)
 
 	application.Connect("startup", func() {
 		log.Println("Starting up", APPID)
+		_cmdline, err := ioutil.ReadFile("/proc/cmdline")
+		commandLine = string(_cmdline)
+		checkError(err)
 		/// TODO pre configurations
 	})
 
@@ -33,17 +40,15 @@ func main() {
 		builder, err := gtk.BuilderNewFromString(app.UI)
 		checkError(err)
 
-		cmdline, err := ioutil.ReadFile("/proc/cmdline")
-		checkError(err)
-
-		if strings.Contains(string(cmdline), "iso=1") {
-			app := setup.Init(builder)
-			app.Window.ShowAll()
-			application.AddWindow(app.Window)
-		} else {
+		if strings.Contains(string(commandLine), "iso=1") || os.Getenv("SYS_SETUP_MODE") == "installer" {
 			installer := installer.Init(builder)
 			installer.Window.ShowAll()
 			application.AddWindow(installer.Window)
+		} else {
+			setup := setup.Init(builder)
+			setup.Window.ShowAll()
+			application.AddWindow(setup.Window)
+
 		}
 
 	})

@@ -43,5 +43,8 @@ func (app *App) DialogList(mesg string, col string, options ...string) (string, 
 func (app *App) DialogUserLogin(text string) (string, string, error) {
 	data, err := exec.Command("/bin/zenity", "--password", "--username", "--text="+text).Output()
 	data_ := strings.Split(strings.TrimSuffix(string(data), "\n"), "|")
+	if len(data_) != 2 {
+		return "", "", err
+	}
 	return data_[0], data_[1], err
 }

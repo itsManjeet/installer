@@ -24,11 +24,9 @@ func Init(ui *gtk.Builder) *Setup {
 
 	setup.Initialize()
 
-	setup.Stages = map[string]func() error{
-		"Setting up locales":  setup.StageLocale,
-		"Setting up TimeZone": setup.StageTimezone,
-		"Setting up Account":  setup.StageAccount,
-	}
+	setup.AddStage("Setting up locales", setup.StageLocale)
+	setup.AddStage("Setting up TimeZone", setup.StageTimezone)
+	setup.AddStage("Setting up Account", setup.StageAccount)
 
 	return &setup
 }

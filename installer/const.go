@@ -3,7 +3,7 @@ package installer
 const (
 	ID            = "dev.rlxos.installer"
 	TITLE         = "System Installer"
-	WELCOME_MESG  = "Welcome to rlxOS system Installer, Click 'continue' to start tour"
+	WELCOME_MESG  = "Welcome to rlxOS system Installer, Click 'continue' to start installation process"
 	PROCESS_TITLE = "Installing rlxOS"
 	PROCESS_DESC  = "Please follow the instruction carefully"
 	SUCCESS_MESG  = "rlxOS is installed successfully, you can now reboot your system"

@@ -22,19 +22,25 @@ func (setup *Setup) StageLocale() error {
 }
 
 func (setup *Setup) SetupLocale(locale string) error {
-	if err := os.MkdirAll("/usr/lib/locale", 0755); err != nil {
-		return err
+	if !setup.IsDebug() {
+		if err := os.MkdirAll("/usr/lib/locale", 0755); err != nil {
+			return err
+		}
 	}
 
 	data := strings.Split(locale, ".")
 	log.Println("Generating locale", data[0]+":"+data[1])
-	if err := exec.Command("localedef", "-i", data[0], "-f", data[1], locale).Run(); err != nil {
-		return err
+	if !setup.IsDebug() {
+		if err := exec.Command("localedef", "-i", data[0], "-f", data[1], locale).Run(); err != nil {
+			return err
+		}
 	}
 
 	log.Println("writing locale to configuration")
-	if err := ioutil.WriteFile("/etc/locale.conf", []byte("LANG="+locale), 0); err != nil {
-		return err
+	if !setup.IsDebug() {
+		if err := ioutil.WriteFile("/etc/locale.conf", []byte("LANG="+locale), 0); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -40,16 +40,20 @@ func main() {
 		builder, err := gtk.BuilderNewFromString(app.UI)
 		checkError(err)
 
+		var window *gtk.Window
+
 		if strings.Contains(string(commandLine), "iso=1") || os.Getenv("SYS_SETUP_MODE") == "installer" {
 			installer := installer.Init(builder)
-			installer.Window.ShowAll()
-			application.AddWindow(installer.Window)
+			window = installer.Window
 		} else {
 			setup := setup.Init(builder)
-			setup.Window.ShowAll()
-			application.AddWindow(setup.Window)
-
+			window = setup.Window
 		}
+
+		window.SetDecorated(false)
+		window.Fullscreen()
+		window.ShowAll()
+		application.AddWindow(window)
 
 	})
 

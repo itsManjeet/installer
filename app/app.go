@@ -38,6 +38,8 @@ type App struct {
 	stages_index []string
 	stages       map[string]func() error
 
+	SuccessHandler func()
+
 	maxMessageSize int
 }
 

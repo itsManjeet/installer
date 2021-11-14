@@ -11,5 +11,8 @@ func (app *App) onContinueBtnClicked() {
 
 func (app *App) onSuccessBtnClicked() {
 	a, _ := app.Window.GetApplication()
+	if app.SuccessHandler != nil {
+		app.SuccessHandler()
+	}
 	a.Quit()
 }

@@ -50,7 +50,6 @@ func main() {
 			window = setup.Window
 		}
 
-		window.SetDecorated(false)
 		window.Fullscreen()
 		window.ShowAll()
 		application.AddWindow(window)

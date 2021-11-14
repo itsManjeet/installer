@@ -1,6 +1,9 @@
 package installer
 
 import (
+	"log"
+	"os/exec"
+
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/rlxos/installer/app"
 	"github.com/rlxos/installer/disk"
@@ -31,6 +34,13 @@ func Init(ui *gtk.Builder) *Installer {
 	in.AddStage("Reading System Configurations", in.StageSysConfig)
 	in.AddStage("Verify System Memory", in.StageVerifyMemory)
 	in.AddStage("Installing System", in.StageInstall)
+
+	in.SuccessHandler = func() {
+		log.Println("logging out from system")
+		if !in.IsDebug() {
+			exec.Command("reboot").Run()
+		}
+	}
 
 	return &in
 }

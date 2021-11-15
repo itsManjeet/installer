@@ -100,7 +100,7 @@ default='rlxos initial setup'
 menuentry 'rlxos initial setup' {
 	insmod gzio
 	insmod ext2
-	linux /boot/vmlinuz root=` + PartitionUUID + " system=" + VERSION + `
+	linux /boot/vmlinuz root=UUID=` + PartitionUUID + " system=" + VERSION + `
 	initrd /boot/initrd	
 }`
 

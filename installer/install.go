@@ -1,205 +1,141 @@
 package installer
 
 import (
-	"errors"
-	"log"
 	"os"
 	"os/exec"
 	"path"
+	"time"
+
+	"github.com/gotk3/gotk3/glib"
 )
 
-func (in *Installer) StageInstall() error {
-	root_disk := ""
-	var err error
-	for {
+func (ins *Installer) StartInstallation() {
 
-		log.Println("Searching root device with label 'rlxos'")
-		root_disk, err = in.searchLabel("rlxos")
-		if err != nil {
-			return err
-		}
+	updateProgress := func(mesg string, prog float64) {
+		glib.IdleAdd(func() {
+			ins.installProgress.SetText(mesg)
+			ins.installProgress.SetFraction(prog)
+		})
 
-		if !in.DialogAsk("Please confirm if you want to install rlxOS on " + root_disk) {
-			return errors.New("user cancelled")
-		}
-
-		if len(root_disk) != 0 {
-			return in.installImage("/run/iso/rootfs.img", root_disk)
-		}
-
+		time.Sleep(time.Millisecond * 150)
 	}
-}
+	updateProgress("Preparing parition", 0.05)
 
-func (in *Installer) searchLabel(lbl string) (string, error) {
-	for _, disk := range in.devices.Devices {
-		for _, part := range disk.Childrens {
-			if part.Label == lbl {
-				return part.Path, nil
-			}
-		}
-	}
-
-	if err := exec.Command("gparted").Run(); err != nil {
-		return "", err
-	}
-
-	if err := in.StageSysConfig(); err != nil {
-		return "", err
-	}
-
-	return "", nil
-}
-
-func (in *Installer) installImage(imagePath, deviceNode string) error {
-	tempdir, err := os.MkdirTemp("", "installer-*")
+	workDir, err := os.MkdirTemp("", APPID+"-*")
 	if err != nil {
-		return err
+		updateProgress("Failed to prepare work directory", 1.0)
+		return
 	}
 
-	in.tempdir = tempdir
-
-	log.Printf("Mounting %s %s\n", deviceNode, tempdir)
-	if !in.IsDebug() {
-		if err := exec.Command("mount", deviceNode, tempdir).Run(); err != nil {
-			return err
+	if !ins.IsDebug(APPID) {
+		if err := exec.Command("mount", PartitionPath, workDir).Run(); err != nil {
+			updateProgress("Failed to mount partition, "+err.Error(), 1.0)
+			return
 		}
 	}
-	log.Println("Creating directories")
-	if !in.IsDebug() {
-		if err := os.MkdirAll(path.Join(tempdir, "rlxos", "system"), 0755); err != nil {
-			return err
+	updateProgress("Creating rlxos required directories", 0.1)
+	systemPath := path.Join(workDir, "rlxos", "system")
+	bootPath := path.Join(workDir, "boot")
+	efiDir := path.Join(bootPath, "efi")
+	if !ins.IsDebug(APPID) {
+		if err := os.MkdirAll(systemPath, 0755); err != nil {
+			updateProgress("Failed to create required dir, "+err.Error(), 1.0)
+			return
 		}
-	}
 
-	log.Println("Copying squash")
-	if !in.IsDebug() {
-		if err := exec.Command("cp", imagePath, path.Join(tempdir, "rlxos", "system", VERSION)).Run(); err != nil {
-			return err
+		if err := os.MkdirAll(bootPath, 0755); err != nil {
+			updateProgress("Failed to create required dir, "+err.Error(), 1.0)
+			return
 		}
-	}
 
-	return in.installBootloader(tempdir, deviceNode)
-}
+		if BootLoader == BootLoaderTypeEfi {
 
-func (in *Installer) installBootloader(rootdir string, rootdevice string) error {
-	bootdir := path.Join(rootdir, "boot")
-	if err := os.MkdirAll(path.Join(bootdir, "grub"), 0755); err != nil {
-		return err
-	}
-	args := []string{"--root-directory=" + rootdir, "--boot-directory=" + bootdir, "--recheck"}
-
-	if _, err := os.Stat("/sys/firmware/efi/efivars"); os.IsNotExist(err) {
-		BootDevice := ""
-		for len(BootDevice) == 0 {
-			disks := make([]string, 0)
-			for _, a := range in.devices.Devices {
-				disks = append(disks, a.Path)
-			}
-			BootDevice, err = in.DialogList("Boot Disk", "disk", disks...)
-			if err != nil {
-				return err
-			}
-		}
-		args = append(args, BootDevice)
-	} else {
-		efidir := path.Join(bootdir, "efi")
-		if !in.IsDebug() {
-			if err := os.MkdirAll(efidir, 0755); err != nil {
-				return err
+			if err := os.MkdirAll(efiDir, 0755); err != nil {
+				updateProgress("Failed to create efi directory", 1.0)
+				return
 			}
 		}
 
-		BootDevice := ""
-		for len(BootDevice) == 0 {
-			log.Println("Search EFI partition with LABEL 'EFI'")
-			for _, disk := range in.devices.Devices {
-				for _, part := range disk.Childrens {
-					if part.Label == "EFI" {
-						BootDevice = part.Path
-						break
-					}
-				}
-				if len(BootDevice) != 0 {
-					break
-				}
+	}
+	updateProgress("Installing System Image", 0.2)
+	if !ins.IsDebug(APPID) {
+		if err := exec.Command("cp", IMAGE_PATH, path.Join(systemPath, VERSION)).Run(); err != nil {
+			updateProgress("Failed to install system image, "+err.Error(), 1.0)
+			return
+		}
+	}
+	updateProgress("Installing bootloader", 0.5)
+	switch BootLoader {
+	case BootLoaderTypeEfi:
+		if !ins.IsDebug(APPID) {
+			if err := exec.Command("mount", BootDevice, efiDir).Run(); err != nil {
+				updateProgress("Failed to mount efi, "+err.Error(), 1.0)
+				return
 			}
-
-			if len(BootDevice) == 0 {
-				if err := exec.Command("gparted").Run(); err != nil {
-					return err
-				}
-
-				if err := in.StageSysConfig(); err != nil {
-					return err
-				}
+			if err := exec.Command("grub-install", "--root-directory="+workDir, "--boot-directory="+bootPath, "--recheck").Run(); err != nil {
+				updateProgress("Failed to install bootloader, "+err.Error(), 1.0)
+				return
 			}
 		}
 
-		log.Println("mounting boot device ", BootDevice)
-		if !in.IsDebug() {
-			if err := exec.Command("/bin/mount", BootDevice, efidir).Run(); err != nil {
-				return err
+	case BootLoaderTypeLegacy:
+		if !ins.IsDebug(APPID) {
+			if err := exec.Command("grub-install", "--root-directory="+workDir, "--boot-directory="+bootPath, "--recheck", BootDevice).Run(); err != nil {
+				updateProgress("Failed to install bootloader, "+err.Error(), 1.0)
+				return
 			}
 		}
-
-		args = append(args, "--bootloader-id=rlx")
+	default:
+		updateProgress("Unsupported Bootloader: "+BootLoader.String(), 1.0)
+		return
 	}
-
-	log.Println("installing grub")
-	if !in.IsDebug() {
-		err := exec.Command("/bin/grub-install", args...).Run()
-		if err != nil {
-			return err
-		}
-	}
-
-	var UUID string
-	log.Println("configuring bootloader")
-	for _, disk := range in.devices.Devices {
-		for _, part := range disk.Childrens {
-			if part.Path == rootdevice {
-				UUID = part.UUID
-				break
-			}
-
-			if len(UUID) != 0 {
-				break
-			}
-		}
-	}
-
-	device_config := "UUID=" + UUID
-	if len(UUID) == 0 {
-		device_config = rootdevice
-	}
-
-	grubcfg := `
+	updateProgress("Configuring Bootloader", 0.7)
+	grubConfig := `
 insmod part_gpt
 insmod part_msdos
 insmod all_video
 timeout=5
-default='rlxos inital setup'
-menuentry 'rlxos inital setup' {
+default='rlxos initial setup'
+
+menuentry 'rlxos initial setup' {
 	insmod gzio
 	insmod ext2
-	linux /boot/vmlinuz root=` + device_config + " system=" + VERSION + `
-	initrd /boot/initrd
+	linux /boot/vmlinuz root=` + PartitionUUID + " system=" + VERSION + `
+	initrd /boot/initrd	
 }`
 
-	if !in.IsDebug() {
-		if err := os.WriteFile(path.Join(rootdir, "boot", "grub", "grub.cfg"), []byte(grubcfg), 0644); err != nil {
-			return err
+	if !ins.IsDebug(APPID) {
+		if err := os.WriteFile(path.Join(bootPath, "grub", "grub.cfg"), []byte(grubConfig), 0644); err != nil {
+			updateProgress("Failed to write grub configuration, "+err.Error(), 1.0)
+			return
 		}
-
-		if err := exec.Command("/bin/cp", "/run/iso/boot/vmlinuz", path.Join(rootdir, "boot", "vmlinuz")).Run(); err != nil {
-			return err
-		}
-
-		if err := exec.Command("/bin/cp", "/run/iso/boot/initrd", path.Join(rootdir, "boot", "initrd")).Run(); err != nil {
-			return err
-		}
-
 	}
 
-	return nil
+	updateProgress("Installing kernel", 0.8)
+	isoBootPath := path.Join(path.Dir(IMAGE_PATH), "boot")
+	if !ins.IsDebug(APPID) {
+		if err := exec.Command("cp", path.Join(isoBootPath, "vmlinuz"), path.Join(bootPath, "vmlinuz")).Run(); err != nil {
+			updateProgress("Failed to install linux kernel, "+err.Error(), 1.0)
+			return
+		}
+	}
+
+	updateProgress("Installing initrd", 0.9)
+	data, err := exec.Command("zenity", "--entry", "--text=Enter Recovery Password", "--hide-text").Output()
+	if err != nil {
+		updateProgress("Failed to execute zentry, "+err.Error(), 1.0)
+		return
+	}
+
+	if !ins.IsDebug(APPID) {
+		if err := exec.Command("mkinitramfs", "-o="+path.Join(bootPath, "initrd"), "-p="+string(data)).Run(); err != nil {
+			updateProgress("Failed to generate initrd, "+err.Error(), 1.0)
+			return
+		}
+	}
+	updateProgress("Installation Success", 1.0)
+
+	glib.IdleAdd(func() {
+		ins.Window.SetCurrentPage(4)
+	})
 }

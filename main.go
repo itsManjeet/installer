@@ -5,13 +5,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
-	"github.com/rlxos/installer/app"
 	"github.com/rlxos/installer/installer"
-	"github.com/rlxos/installer/setup"
 )
 
 const (
@@ -37,20 +34,15 @@ func main() {
 	application.Connect("activate", func() {
 		log.Println("Activating", APPID)
 
-		builder, err := gtk.BuilderNewFromString(app.UI)
+		window, err := gtk.AssistantNew()
 		checkError(err)
 
-		var window *gtk.Window
+		window.SetDefaultSize(800, 600)
 
-		if strings.Contains(string(commandLine), "iso=1") || os.Getenv("SYS_SETUP_MODE") == "installer" {
-			installer := installer.Init(builder)
-			window = installer.Window
-		} else {
-			setup := setup.Init(builder)
-			window = setup.Window
+		if err := installer.Setup(window); err != nil {
+			checkError(err)
 		}
 
-		window.Fullscreen()
 		window.ShowAll()
 		application.AddWindow(window)
 

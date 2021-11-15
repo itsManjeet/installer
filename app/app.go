@@ -1,120 +1,101 @@
 package app
 
 import (
-	"errors"
 	"log"
 	"os"
-	"os/exec"
 
-	"github.com/gotk3/gotk3/glib"
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
 type App struct {
-	ui *gtk.Builder
-
-	ID          string
-	Title       string
-	WelcomeMesg string
-
-	ProcessTitle string
-	ProcessMesg  string
-
-	SuccessMesg string
-	SuccessBtn  string
-
-	Stack  *gtk.Stack
-	Window *gtk.Window
-
-	welcomeMesgLbl *gtk.Label
-	processNameLbl *gtk.Label
-	processDescLbl *gtk.Label
-	successMesgLbl *gtk.Label
-	successBtn     *gtk.Button
-
-	StatusBuffer *gtk.TextBuffer
-	ProgressBar  *gtk.ProgressBar
-
-	stages_index []string
-	stages       map[string]func() error
-
-	SuccessHandler func()
-
-	maxMessageSize int
+	Window *gtk.Assistant
 }
 
-func Create(ui *gtk.Builder) *App {
-	var app App
-
-	app.ui = ui
-
-	app.Window = app.getWidget("mainWindow").(*gtk.Window)
-	app.Window.SetTitle(app.Title)
-
-	app.Stack = app.getWidget("stack").(*gtk.Stack)
-
-	app.StatusBuffer = app.getWidget("statusBuffer").(*gtk.TextBuffer)
-	app.ProgressBar = app.getWidget("progressBar").(*gtk.ProgressBar)
-	app.welcomeMesgLbl = app.getWidget("welcomeMesgLbl").(*gtk.Label)
-	app.processNameLbl = app.getWidget("processNameLbl").(*gtk.Label)
-	app.processDescLbl = app.getWidget("processDescLbl").(*gtk.Label)
-	app.successMesgLbl = app.getWidget("successDescLbl").(*gtk.Label)
-	app.successBtn = app.getWidget("successBtn").(*gtk.Button)
-
-	signals := map[string]interface{}{
-		"onDestroy":            app.onDestroy,
-		"onSuccessBtnClicked":  app.onSuccessBtnClicked,
-		"onContinueBtnClicked": app.onContinueBtnClicked,
-	}
-
-	app.stages = map[string]func() error{
-		"Initializing": func() error {
-			return errors.New("not yet implemented")
-		},
-	}
-
-	app.ui.ConnectSignals(signals)
-
-	app.Window.SetPosition(gtk.WIN_POS_CENTER_ALWAYS)
-	return &app
+func Setup(win *gtk.Assistant) (app *App, err error) {
+	app = &App{Window: win}
+	return
 }
 
-func (app *App) Initialize() {
-	app.successBtn.SetLabel(app.SuccessBtn)
-	app.successMesgLbl.SetText(app.SuccessMesg)
-	app.processDescLbl.SetText(app.ProcessMesg)
-	app.processNameLbl.SetText(app.ProcessTitle)
-	app.welcomeMesgLbl.SetText(app.WelcomeMesg)
+func (app App) GetIcon(logo string, size int) (pixbuf *gdk.Pixbuf, err error) {
 
-}
-
-func (app *App) getWidget(id string) glib.IObject {
-	obj, err := app.ui.GetObject(id)
-	app.checkError(err)
-	return obj
-}
-
-func (applr App) checkError(err error) {
+	theme, err := gtk.IconThemeGetDefault()
 	if err != nil {
-		log.Println("EE", err.Error())
-		exec.Command("/bin/zenity", "--error", "--text", err.Error()).Run()
-		os.Exit(1)
+		return
 	}
+
+	pixbuf, err = theme.LoadIcon(logo, size, gtk.ICON_LOOKUP_FORCE_SIZE)
+	if err != nil {
+		return nil, nil
+	}
+
+	return
 }
 
-func (app *App) AddStage(id string, callback func() error) {
-
-	if app.maxMessageSize < len(id) {
-		app.maxMessageSize = len(id)
+func (app *App) NewPage(title, subtitle, icon string, data interface{}) (page *Page, err error) {
+	page = &Page{
+		GlobalData: data,
 	}
 
-	if app.stages_index == nil {
-		app.stages_index = make([]string, 0)
-	}
-	app.stages_index = append(app.stages_index, id)
+	page.Window = app.Window
 
-	if app.stages == nil {
-		app.stages = make(map[string]func() error)
+	page.Box, err = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	if err != nil {
+		return
 	}
-	app.stages[id] = callback
+
+	pixbuf, err := app.GetIcon(icon, 64)
+	if err != nil {
+		return
+	}
+	page.Icon, err = gtk.ImageNewFromPixbuf(pixbuf)
+	if err != nil {
+		return
+	}
+
+	page.Box.PackStart(page.Icon, false, false, 17)
+
+	page.Title, err = gtk.LabelNew("")
+	if err != nil {
+		return
+	}
+	page.Title.SetMarkup("<span size=\"xx-large\" weight=\"ultrabold\">" + title + "</span>")
+	page.Box.PackStart(page.Title, false, false, 0)
+
+	page.SubTitle, err = gtk.LabelNew("")
+	if err != nil {
+		return
+	}
+	page.SubTitle.SetMarkup("<span weight=\"bold\">" + subtitle + "</span>")
+	page.SubTitle.SetMarginBottom(27)
+	page.Box.PackStart(page.SubTitle, false, false, 0)
+
+	return
+}
+
+func (app *App) NewTitledPage(title, subtitle, icon string, data interface{}) (page *Page, err error) {
+	page, err = app.NewPage(title, subtitle, icon, data)
+	if err != nil {
+		return
+	}
+
+	pixbuf, err := app.GetIcon(icon, 128)
+	if err != nil {
+		return
+	}
+
+	page.Icon.SetFromPixbuf(pixbuf)
+	page.Box.SetVAlign(gtk.ALIGN_CENTER)
+	page.Box.SetMarginBottom(150)
+
+	return
+}
+
+func (app *App) IsDebug(appID string) bool {
+	if env := os.Getenv(appID + "_DEBUG"); len(env) == 0 {
+		log.Println("Debug is disabled")
+		return false
+	}
+	log.Println("Debug is enabled")
+	return true
 }

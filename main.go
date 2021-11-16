@@ -5,9 +5,12 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
+	"github.com/rlxos/installer/firstlogin"
 	"github.com/rlxos/installer/installer"
 )
 
@@ -28,6 +31,7 @@ func main() {
 		_cmdline, err := ioutil.ReadFile("/proc/cmdline")
 		commandLine = string(_cmdline)
 		checkError(err)
+
 		/// TODO pre configurations
 	})
 
@@ -39,12 +43,29 @@ func main() {
 
 		window.SetDefaultSize(800, 600)
 
-		if err := installer.Setup(window); err != nil {
-			checkError(err)
+		if strings.Contains(commandLine, "iso") || os.Getenv("SYS_SETUP_MODE") == "installer" {
+			if err := installer.Setup(window); err != nil {
+				checkError(err)
+			}
+		} else {
+			if err := firstlogin.Setup(window); err != nil {
+				checkError(err)
+			}
 		}
 
 		window.ShowAll()
 		application.AddWindow(window)
+
+		provider, err := gtk.CssProviderNew()
+		checkError(err)
+
+		if err := provider.LoadFromData("entry { padding: 18px; }"); err != nil {
+			checkError(err)
+		}
+
+		screen, err := gdk.ScreenGetDefault()
+		checkError(err)
+		gtk.AddProviderForScreen(screen, provider, 1)
 
 	})
 

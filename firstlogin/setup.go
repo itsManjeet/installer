@@ -20,7 +20,11 @@ type FirstLogin struct {
 	timeZoneList *gtk.ListBox
 
 	UserAccountPage *app.Page
-	FinishedPage    *app.Page
+
+	ProcessPage  *app.Page
+	postProgress *gtk.ProgressBar
+
+	FinishedPage *app.Page
 }
 
 func Setup(win *gtk.Assistant) error {
@@ -138,6 +142,22 @@ func Setup(win *gtk.Assistant) error {
 	})
 
 	//
+	// Process Page
+	//
+	f.ProcessPage, err = f.NewPage("Post Install", "Executing post setup configurations", "configure", nil)
+	if err != nil {
+		return err
+	}
+	f.postProgress, err = gtk.ProgressBarNew()
+	if err != nil {
+		return err
+	}
+	f.postProgress.SetShowText(true)
+	f.ProcessPage.PackStart(f.postProgress, true, true, 0)
+	win.AppendPage(f.ProcessPage)
+	win.SetPageType(f.ProcessPage, gtk.ASSISTANT_PAGE_PROGRESS)
+
+	//
 	// Finished Page
 	//
 	f.FinishedPage, err = f.NewTitledPage("Success", "First login tasks done successfully, Enjoy", "emblem-checked", nil)
@@ -156,15 +176,9 @@ func Setup(win *gtk.Assistant) error {
 			if err != nil {
 				log.Println("Failed to remove autologin file, ", err.Error())
 			}
-			pkexecUid := os.Getenv("PKEXEC_UID")
-			if len(pkexecUid) == 0 {
-				if err := exec.Command("xfce4-session-logout", "--logout").Run(); err != nil {
-					log.Println("Failed to do execute logout, ", err)
-				}
-			} else {
-				if err := f.ExecAsUser(pkexecUid, "xfce4-session-logout", "--logout"); err != nil {
-					log.Println("Failed to execute logout", err)
-				}
+
+			if err := exec.Command("reboot").Run(); err != nil {
+				log.Println("Failed to reboot, ", err)
 			}
 
 		} else {

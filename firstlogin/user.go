@@ -67,6 +67,7 @@ func (f *FirstLogin) createUser(userid, passwd string) {
 	glib.IdleAdd(func() {
 		f.Window.SetPageComplete(f.UserAccountPage, true)
 		f.Window.SetCurrentPage(3)
+		go f.startPost()
 	})
 
 }

@@ -33,6 +33,11 @@ func Setup(win *gtk.Assistant) error {
 		return err
 	}
 
+	win.Connect("cancel", func() {
+		app, _ := win.GetApplication()
+		app.Quit()
+	})
+
 	f.WelcomePage, err = f.NewPage("Welcome!", "Thanks for choosing rlxos", "rlxos", nil)
 	if err != nil {
 		return err
@@ -147,7 +152,14 @@ func Setup(win *gtk.Assistant) error {
 	finishedBtn.SetHAlign(gtk.ALIGN_CENTER)
 	finishedBtn.Connect("clicked", func() {
 		if !f.IsDebug(APPID) {
-			exec.Command("xfce4-session-logout", "--logout").Run()
+			err := os.RemoveAll("/etc/lightdm/lightdm.conf.d/10-auto-login.conf")
+			if err != nil {
+				log.Println("Failed to remove autologin file, ", err.Error())
+			}
+			if err := exec.Command("xfce4-session-logout", "--logout").Run(); err != nil {
+				log.Println("Failed to do execute logout, ", err)
+			}
+
 		} else {
 			app, _ := win.GetApplication()
 			app.Quit()

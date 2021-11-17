@@ -52,11 +52,11 @@ func (f *FirstLogin) createUser(userid, passwd string) {
 	}
 
 	if !f.IsDebug(APPID) {
-		if err := exec.Command("useradd", "-G", "adm", "-g", "user", "-m", userid).Run(); err != nil {
+		if err := exec.Command("useradd", "-G", "adm", "-g", "users", "-m", userid).Run(); err != nil {
 			showError(err.Error())
 			return
 		}
-		if err := exec.Command("sh", "-c", "echo "+passwd+"\n"+passwd+" | passwd").Run(); err != nil {
+		if err := exec.Command("sh", "-c", "echo -e \""+passwd+"\n"+passwd+"\" | passwd " + userid).Run(); err != nil {
 			showError(err.Error())
 			return
 		}

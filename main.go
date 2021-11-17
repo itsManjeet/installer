@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/rlxos/installer/firstlogin"
@@ -55,17 +54,6 @@ func main() {
 
 		window.ShowAll()
 		application.AddWindow(window)
-
-		provider, err := gtk.CssProviderNew()
-		checkError(err)
-
-		if err := provider.LoadFromData("entry { padding: 18px; }"); err != nil {
-			checkError(err)
-		}
-
-		screen, err := gdk.ScreenGetDefault()
-		checkError(err)
-		gtk.AddProviderForScreen(screen, provider, 1)
 
 	})
 

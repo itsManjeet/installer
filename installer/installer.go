@@ -31,6 +31,11 @@ func Setup(win *gtk.Assistant) error {
 		return err
 	}
 
+	win.Connect("cancel", func() {
+		app, _ := win.GetApplication()
+		app.Quit()
+	})
+
 	ins.WelcomePage, err = ins.NewTitledPage("Welcome!", "Click on 'Continue' to verify system compatibality with rlxos", "rlxos", nil)
 	if err != nil {
 		return err

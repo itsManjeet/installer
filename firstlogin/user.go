@@ -56,7 +56,7 @@ func (f *FirstLogin) createUser(userid, passwd string) {
 			showError(err.Error())
 			return
 		}
-		if err := exec.Command("sh", "-c", "echo -e \""+passwd+"\n"+passwd+"\" | passwd " + userid).Run(); err != nil {
+		if err := exec.Command("sh", "-c", "echo -e \""+passwd+"\n"+passwd+"\" | passwd "+userid).Run(); err != nil {
 			showError(err.Error())
 			return
 		}
@@ -66,6 +66,7 @@ func (f *FirstLogin) createUser(userid, passwd string) {
 
 	glib.IdleAdd(func() {
 		f.Window.SetPageComplete(f.UserAccountPage, true)
+		f.Window.SetCurrentPage(3)
 	})
 
 }

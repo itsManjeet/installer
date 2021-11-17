@@ -156,8 +156,15 @@ func Setup(win *gtk.Assistant) error {
 			if err != nil {
 				log.Println("Failed to remove autologin file, ", err.Error())
 			}
-			if err := exec.Command("xfce4-session-logout", "--logout").Run(); err != nil {
-				log.Println("Failed to do execute logout, ", err)
+			pkexecUid := os.Getenv("PKEXEC_UID")
+			if len(pkexecUid) == 0 {
+				if err := exec.Command("xfce4-session-logout", "--logout").Run(); err != nil {
+					log.Println("Failed to do execute logout, ", err)
+				}
+			} else {
+				if err := f.ExecAsUser(pkexecUid, "xfce4-session-logout", "--logout"); err != nil {
+					log.Println("Failed to execute logout", err)
+				}
 			}
 
 		} else {

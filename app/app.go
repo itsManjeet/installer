@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 	"os"
+	"os/exec"
+	"os/user"
 
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
@@ -187,4 +189,17 @@ func (app *App) GetListText(row *gtk.ListBoxRow) (string, error) {
 	label := &gtk.Label{Widget: *labelWidget}
 
 	return label.GetText()
+}
+
+func (app *App) ExecAsUser(uid string, cmd ...string) error {
+	u, err := user.LookupId(uid)
+	if err != nil {
+		return err
+	}
+	command := []string{
+		"pkexec", "--username", u.Username,
+	}
+
+	command = append(command, cmd...)
+	return exec.Command(command[0], command[1:]...).Run()
 }

@@ -20,6 +20,7 @@ type FirstLogin struct {
 	timeZoneList *gtk.ListBox
 
 	UserAccountPage *app.Page
+	createUserBtn   *gtk.Button
 
 	ProcessPage  *app.Page
 	postProgress *gtk.ProgressBar
@@ -130,10 +131,10 @@ func Setup(win *gtk.Assistant) error {
 	})
 	f.UserAccountPage.Box.PackStart(passwdBox, false, false, 0)
 
-	createUserBtn, _ := gtk.ButtonNewWithLabel("Create")
-	createUserBtn.SetHAlign(gtk.ALIGN_CENTER)
-	f.UserAccountPage.PackStart(createUserBtn, false, false, 0)
-	createUserBtn.Connect("clicked", func() {
+	f.createUserBtn, _ = gtk.ButtonNewWithLabel("Create")
+	f.createUserBtn.SetHAlign(gtk.ALIGN_CENTER)
+	f.UserAccountPage.PackStart(f.createUserBtn, false, false, 0)
+	f.createUserBtn.Connect("clicked", func() {
 
 		userid, _ := useridBox.GetText()
 		passwd, _ := passwdBox.GetText()

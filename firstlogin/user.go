@@ -22,6 +22,16 @@ func (f *FirstLogin) createUser(userid, passwd string) {
 		})
 	}
 
+	glib.IdleAdd(func() {
+		f.createUserBtn.SetSensitive(false)
+	})
+
+	defer func() {
+		glib.IdleAdd(func() {
+			f.createUserBtn.SetSensitive(true)
+		})
+	}()
+
 	checkEntry := func(data string, entry string) bool {
 		if len(data) == 0 {
 			showError("Please Input value in " + entry)

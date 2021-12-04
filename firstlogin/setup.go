@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/rlxos/installer/app"
@@ -14,10 +15,10 @@ type FirstLogin struct {
 	*app.App
 
 	WelcomePage *app.Page
-	langList    *gtk.ListBox
 
-	TimeZonePage *app.Page
-	timeZoneList *gtk.ListBox
+	TimeZonePage   *app.Page
+	timeZoneSearch *gtk.SearchEntry
+	timeZoneList   *gtk.ListBox
 
 	UserAccountPage *app.Page
 	createUserBtn   *gtk.Button
@@ -43,30 +44,13 @@ func Setup(win *gtk.Assistant) error {
 		app.Quit()
 	})
 
-	f.WelcomePage, err = f.NewPage("Welcome!", "Thanks for choosing rlxos", "rlxos", nil)
+	f.WelcomePage, err = f.NewTitledPage("Welcome!", "Thanks for choosing rlxos", "rlxos", nil)
 	if err != nil {
 		return err
 	}
-	f.langList, err = gtk.ListBoxNew()
-	if err != nil {
-		return err
-	}
-
-	f.UpdateListText(f.langList, "en_IN.UTF-8", "en_US.UTF-8")
-	f.langList.Connect("row-activated", func(list *gtk.ListBox, row *gtk.ListBoxRow) {
-		SelectedLocale, _ = f.GetListText(row)
-		log.Println("Selected Locale: ", SelectedLocale)
-		go f.generateLocale(SelectedLocale)
-		win.SetPageComplete(f.WelcomePage, true)
-	})
-	wid, err := f.CreateList(f.langList)
-	if err != nil {
-		return err
-	}
-	f.WelcomePage.Box.PackStart(wid, true, true, 0)
-
 	win.AppendPage(f.WelcomePage)
 	win.SetPageType(f.WelcomePage, gtk.ASSISTANT_PAGE_INTRO)
+	win.SetPageComplete(f.WelcomePage, true)
 
 	//
 	// Timezone
@@ -75,13 +59,21 @@ func Setup(win *gtk.Assistant) error {
 	if err != nil {
 		return err
 	}
+	f.timeZoneSearch, err = gtk.SearchEntryNew()
+	if err != nil {
+		return err
+	}
+	f.timeZoneSearch.SetMarginStart(185)
+	f.timeZoneSearch.SetMarginEnd(185)
+
+	f.TimeZonePage.Box.PackStart(f.timeZoneSearch, false, false, 0)
 	f.timeZoneList, err = gtk.ListBoxNew()
 	if err != nil {
 		return err
 	}
+
 	f.UpdateListText(f.timeZoneList, f.getTimeZoneList()...)
 	f.timeZoneList.Connect("row-activated", func(list *gtk.ListBox, row *gtk.ListBoxRow) {
-
 	})
 	timeZoneListWidget, err := f.CreateList(f.timeZoneList)
 	if err != nil {
@@ -93,6 +85,23 @@ func Setup(win *gtk.Assistant) error {
 		log.Println("Selected Timezone: ", SelectedTimeZone)
 		go os.Link(path.Join(TIMEZONE_DIR, SelectedTimeZone), "/etc/localtime")
 		win.SetPageComplete(f.TimeZonePage, true)
+	})
+
+	f.timeZoneSearch.Connect("search-changed", func() {
+		input, _ := f.timeZoneSearch.GetText()
+		if len(input) == 0 {
+			f.UpdateListText(f.timeZoneList, f.getTimeZoneList()...)
+		} else {
+			data := []string{}
+
+			for _, a := range f.getTimeZoneList() {
+				if strings.Contains(strings.ToLower(a), strings.ToLower(input)) {
+					data = append(data, a)
+				}
+			}
+			f.UpdateListText(f.timeZoneList, data...)
+		}
+
 	})
 
 	win.AppendPage(f.TimeZonePage)

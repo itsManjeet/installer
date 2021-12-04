@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/rlxos/installer/firstlogin"
 	"github.com/rlxos/installer/installer"
+	"github.com/snapcore/go-gettext"
 )
 
 const (
@@ -22,6 +24,16 @@ var (
 )
 
 func main() {
+
+	// setting up gettext
+	domain := &gettext.TextDomain{
+		Name:      "SystemSetup",
+		LocaleDir: "locale",
+	}
+
+	locale := domain.Locale("hi_IN")
+	fmt.Println(locale.Gettext("Hello World"))
+
 	application, err := gtk.ApplicationNew(APPID, glib.APPLICATION_FLAGS_NONE)
 	checkError(err)
 

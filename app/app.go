@@ -166,6 +166,7 @@ func (app *App) UpdateList(list *gtk.ListBox, data ...*gtk.Widget) error {
 		row.Add(box)
 
 		list.Insert(row, pos)
+		list.ShowAll()
 	}
 
 	return nil

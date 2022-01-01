@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/gotk3/gotk3/glib"
@@ -89,6 +90,13 @@ func (ins *Installer) StartInstallation() {
 		updateProgress("Unsupported Bootloader: "+BootLoader.String(), 1.0)
 		return
 	}
+
+	kernelVersionExec, err := exec.Command("uname", "-r").CombinedOutput()
+	kernelVersion := ""
+	if err == nil {
+		kernelVersion = "-" + strings.TrimSpace(string(kernelVersionExec))
+	}
+
 	updateProgress("Configuring Bootloader", 0.7)
 	grubConfig := `
 insmod part_gpt
@@ -100,8 +108,8 @@ default='rlxos initial setup'
 menuentry 'rlxos initial setup' {
 	insmod gzio
 	insmod ext2
-	linux /boot/vmlinuz root=UUID=` + PartitionUUID + " system=" + VERSION + `
-	initrd /boot/initrd	
+	linux /boot/vmlinuz` + kernelVersion + ` root=UUID=` + PartitionUUID + " system=" + VERSION + `
+	initrd /boot/initrd` + kernelVersion + `	
 }`
 
 	if !ins.IsDebug(APPID) {
@@ -114,8 +122,16 @@ menuentry 'rlxos initial setup' {
 	updateProgress("Installing kernel", 0.8)
 	isoBootPath := path.Join(path.Dir(IMAGE_PATH), "boot")
 	if !ins.IsDebug(APPID) {
-		if err := exec.Command("cp", path.Join(isoBootPath, "vmlinuz"), path.Join(bootPath, "vmlinuz")).Run(); err != nil {
+		if err := exec.Command("cp", path.Join(isoBootPath, "vmlinuz"), path.Join(bootPath, "vmlinuz"+kernelVersion)).Run(); err != nil {
 			updateProgress("Failed to install linux kernel, "+err.Error(), 1.0)
+			return
+		}
+	}
+
+	updateProgress("Installing modules", 0.85)
+	if !ins.IsDebug(APPID) {
+		if err := exec.Command("cp", path.Join(isoBootPath, "modules"), path.Join(bootPath), "-a").Run(); err != nil {
+			updateProgress("Failed to install kernel modules,"+err.Error(), 1.0)
 			return
 		}
 	}
@@ -128,7 +144,7 @@ menuentry 'rlxos initial setup' {
 	}
 
 	if !ins.IsDebug(APPID) {
-		if err := exec.Command("mkinitramfs", "-o="+path.Join(bootPath, "initrd"), "-p="+string(data)).Run(); err != nil {
+		if err := exec.Command("mkinitramfs", "-o="+path.Join(bootPath, "initrd"+kernelVersion), "-p="+string(data)).Run(); err != nil {
 			updateProgress("Failed to generate initrd, "+err.Error(), 1.0)
 			return
 		}

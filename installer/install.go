@@ -122,7 +122,7 @@ menuentry 'rlxos initial setup' {
 	updateProgress("Installing kernel", 0.8)
 	isoBootPath := path.Join(path.Dir(IMAGE_PATH), "boot")
 	if !ins.IsDebug(APPID) {
-		if err := exec.Command("cp", path.Join(isoBootPath, "vmlinuz"), path.Join(bootPath, "vmlinuz"+kernelVersion)).Run(); err != nil {
+		if err := exec.Command("cp", path.Join(isoBootPath, "vmlinuz"+kernelVersion), path.Join(bootPath, "vmlinuz"+kernelVersion)).Run(); err != nil {
 			updateProgress("Failed to install linux kernel, "+err.Error(), 1.0)
 			return
 		}

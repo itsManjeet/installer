@@ -1,0 +1,18 @@
+#ifndef CONFIG_H_IN
+#define CONFIG_H_IN
+
+#define PROJECT_NAME "@PROJECT_NAME@"
+#define PROJECT_VERSION "@PROJECT_VERSION@"
+#define APP_ID "@APP_ID@"
+#define APP_PREFIX "@APP_PREFIX@"
+#define HELP_URL "https://docs.rlxos.dev/installation-1/installer"
+
+#define MINIMUM_MEMORY 1073741824
+#define MINIMUM_DISKSPACE 5368709120
+#define ISO_PATH "/run/iso/"
+
+#ifdef DEBUG
+#define DATA_DIR "@DATA_DIR@"
+#endif
+
+#endif

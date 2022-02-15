@@ -10,8 +10,8 @@ ListBox::ListBox() {
 
   set_margin_top(27);
   set_margin_bottom(27);
-  set_margin_start(150);
-  set_margin_end(150);
+  set_margin_start(250);
+  set_margin_end(250);
 
   set_hexpand();
 }

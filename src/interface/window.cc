@@ -16,7 +16,7 @@ Window::Window()
   // set_deletable(false);
   set_resizable(false);
 
-  set_default_size(800, 600);
+  set_default_size(980, 680);
   set_icon(
       Gdk::Pixbuf::create_from_resource(APP_PREFIX "icons/scalable/icon.svg"));
 

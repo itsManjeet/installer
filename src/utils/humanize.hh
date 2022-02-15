@@ -8,11 +8,11 @@ static inline std::string humanize(size_t bytes) {
   if (bytes <= 0)
     r = "0 Bytes";
   else if (bytes >= 1073741824)
-    r = std::to_string(bytes / 1073741824) + " GBytes";
+    r = std::to_string(bytes / 1073741824) + " GiB";
   else if (bytes >= 1048576)
-    r = std::to_string(bytes / 1048576) + " MBytes";
+    r = std::to_string(bytes / 1048576) + " MiB";
   else if (bytes >= 1024)
-    r = std::to_string(bytes / 1024) + " KBytes";
+    r = std::to_string(bytes / 1024) + " KiB";
   return r;
 }
 

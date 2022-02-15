@@ -3,7 +3,7 @@
 WelcomePage::WelcomePage(InstallData* data) : Page(data) {
   set_valign(Gtk::ALIGN_CENTER);
 
-  m_Image.set_from_icon_name("rlxos", Gtk::ICON_SIZE_BUTTON);
+  m_Image.set_from_icon_name("start-here-symbolic", Gtk::ICON_SIZE_BUTTON);
   m_Image.set_pixel_size(128);
   pack_start(m_Image, false, false);
 
@@ -17,7 +17,7 @@ WelcomePage::WelcomePage(InstallData* data) : Page(data) {
       "<span size=\"large\" color=\"gray\">Welcome to rlxos system "
       "installer, click 'Next' to start the process</span>");
   pack_start(m_SubTitle, false, false);
-  m_SubTitle.set_margin_bottom(50);
+  m_SubTitle.set_margin_bottom(150);
 }
 
 void WelcomePage::on_load() {}

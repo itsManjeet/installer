@@ -5,8 +5,10 @@
 
 class FinishPage : public Page {
  private:
-  Gtk::Image m_Image;
   Gtk::Label m_EndMesg;
+  Gtk::Button m_Reboot;
+
+  void on_reboot();
 
  public:
   FinishPage(InstallData* data);

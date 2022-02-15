@@ -8,10 +8,14 @@ ListBox::ListBox() {
   m_ListBox.set_header_func(sigc::mem_fun(*this, &ListBox::header_func));
   m_Frame.add(m_ListBox);
 
+  set_resize_mode(Gtk::RESIZE_PARENT);
+
   set_margin_top(27);
   set_margin_bottom(27);
   set_margin_start(250);
   set_margin_end(250);
+  set_valign(Gtk::ALIGN_FILL);
+  set_vexpand(false);
 
   set_hexpand();
 }

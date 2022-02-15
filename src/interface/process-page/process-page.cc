@@ -66,7 +66,7 @@ void ProcessPage::update() {
     if (success) {
       m_signal_update_buttons.emit(true, true);
     } else {
-      m_signal_update_buttons.emit(false, false);
+      m_signal_update_buttons.emit(true, true);
     }
   }
 }

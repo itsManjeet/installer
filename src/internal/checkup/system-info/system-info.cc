@@ -16,7 +16,7 @@ bool SystemInfoCheckup::process() {
     m_Mesg = "found system version '" + version + "'";
     return true;
   }
-
+  m_Data->version("2200");
   m_Mesg = "InternalError! no system version found";
   return false;
 }

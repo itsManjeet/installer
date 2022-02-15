@@ -5,11 +5,7 @@
 
 #include "config.h"
 
-bool SystemInfoCheckup::process() {
-  m_Data->version("2200");
-  m_Mesg = "Found system version '" + m_Data->version() + "'";
-  return true;
-  
+bool SystemInfoCheckup::process() {  
   if (std::filesystem::exists(ISO_PATH "version")) {
     std::ifstream file(ISO_PATH "version");
     std::string version;

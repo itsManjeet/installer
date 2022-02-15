@@ -2,6 +2,8 @@
 
 #include <filesystem>
 
+#include "../../../utils/exec.hh"
+
 bool Kernel::process() {
   if (!std::filesystem::exists(m_Data->workDir())) {
     m_Mesg = "InternalError, '" + m_Data->workDir() + "' dir is missing";
@@ -16,10 +18,10 @@ bool Kernel::process() {
     return false;
   }
 
-  std::error_code err;
-  std::filesystem::copy(bootdir, m_Data->workDir() + "/boot", err);
-  if (err) {
-    m_Mesg = "Failed to install kernel and drivers, " + err.message();
+  auto [status, output] = Exec::output(
+      ("cp -a " + bootdir + " " + m_Data->workDir() + "/boot").c_str());
+  if (status != 0) {
+    m_Mesg = "Failed to install kernel and drivers, " + output;
     return false;
   }
 

@@ -7,20 +7,45 @@
 bool SearchBootCheckup::process() {
   if (m_Data->isEfi()) {
     auto [status, output] = Exec::output(
-        "lsblk -npo PATH,PARTTYPENAME | grep 'EFI System' | awk '{print $1}' | "
-        "head -n1");
+        "lsblk -npo PATH,PARTTYPENAME | grep 'EFI System' | awk '{print $1}'");
 
     if (status != 0) {
       m_Mesg = "failed to detect EFI partition, " + output;
       return false;
     }
 
-    if (output.length() == 0) {
+    std::vector<std::string> efi_s;
+    std::string line;
+    std::stringstream ss(output);
+    while (std::getline(ss, line)) {
+      efi_s.push_back(line);
+    }
+
+    if (efi_s.size() == 0) {
       m_Mesg =
           "no EFI partition detected, please make sure it has PartTypeName as "
           "'EFI System'";
       return false;
     }
+
+    if (efi_s.size() > 1) {
+      std::string efis;
+      for (auto const& i : efi_s) {
+        efis += " " + i;
+      }
+
+      auto [status, output_] = Exec::output(
+          ("zenity --list --column=EFI --text='Select Boot Parition' " + efis)
+              .c_str());
+
+      if (status != 0) {
+        m_Mesg = "failed to load EFI paritition list";
+        return false;
+      }
+
+      output = output_;
+    }
+
     if (std::filesystem::exists(output)) {
       m_Mesg = "Found EFI partition '" + output + "'";
       m_Data->bootDevice(output);

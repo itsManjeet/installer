@@ -44,7 +44,7 @@ default='rlxos [inital-setup]'
 menuentry 'rlxos [inital-setup]' {
   insmod gzio
   insmod ext2
-  linux /boot/vmlinuz-%s root=UUID=%s system=%s
+  linux /boot/vmlinuz-%s root=UUID=%s system=%s quiet splash fastboot
   initrd /boot/initrd-%s
 })";
 

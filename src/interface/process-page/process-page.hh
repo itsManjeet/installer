@@ -11,6 +11,7 @@ class ProcessPage : public Page {
  protected:
   Gtk::Label m_Title;
   ListBox m_ListBox;
+  GtkWidget* m_Clamp;
   Gtk::ProgressBar m_ProgressBar;
 
   bool isRunning = false;

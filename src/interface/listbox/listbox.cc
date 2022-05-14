@@ -1,23 +1,9 @@
 #include "listbox.hh"
 
 ListBox::ListBox() {
-  set_policy(Gtk::PolicyType::POLICY_NEVER, Gtk::PolicyType::POLICY_AUTOMATIC);
-
-  add(m_Frame);
-
+  property_propagate_natural_height() = true;
   m_ListBox.set_header_func(sigc::mem_fun(*this, &ListBox::header_func));
-  m_Frame.add(m_ListBox);
-
-  set_resize_mode(Gtk::RESIZE_PARENT);
-
-  set_margin_top(27);
-  set_margin_bottom(27);
-  set_margin_start(250);
-  set_margin_end(250);
-  set_valign(Gtk::ALIGN_FILL);
-  set_vexpand(false);
-
-  set_hexpand();
+  add(m_ListBox);
 }
 
 void ListBox::clear() {

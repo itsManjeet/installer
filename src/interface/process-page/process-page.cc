@@ -1,5 +1,7 @@
 #include "process-page.hh"
 
+#include <handy.h>
+
 #include "../../worker/worker.hh"
 
 ProcessPage::ProcessPage(std::string const& title,
@@ -13,11 +15,14 @@ ProcessPage::ProcessPage(std::string const& title,
   m_Title.set_margin_top(27);
   m_Title.set_margin_bottom(17);
   pack_start(m_Title, false, false);
-  pack_start(m_ListBox, true, true, 10);
+
+  m_Clamp = hdy_clamp_new();
+  gtk_container_add(GTK_CONTAINER(gobj()), m_Clamp);
+  gtk_container_add(GTK_CONTAINER(m_Clamp), GTK_WIDGET(m_ListBox.gobj()));
 
   m_ProgressBar.set_show_text(true);
   m_ProgressBar.set_valign(Gtk::ALIGN_END);
-  pack_start(m_ProgressBar, false, false);
+  pack_end(m_ProgressBar, false, false);
 
   m_Dispatcher.connect(sigc::mem_fun(*this, &ProcessPage::on_notify));
 }

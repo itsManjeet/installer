@@ -7,6 +7,7 @@
 class ListPage : public Page {
  protected:
   ListBox m_ListBox;
+  GtkWidget* m_Clamp;
   Gtk::Label m_Title;
 
  public:

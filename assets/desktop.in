@@ -5,5 +5,5 @@ GenericName=@PROJECT_NAME@
 Comment=Application
 Icon=@APP_ID@
 StartupNotify=true
-Exec=@PROJECT_NAME@
+Exec=@PROJECT_NAME@ 2>&1 1>/tmp/installer.log
 Categories=GNOME;GTK;

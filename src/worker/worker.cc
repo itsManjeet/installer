@@ -56,9 +56,9 @@ void Worker::start(ProcessPage* page) {
     m_Title = "Result";
     m_Progress = 1.0;
     if (all_pass) {
-      m_Message = "All checkup pass";
+      m_Message = "process complete successfully";
     } else {
-      m_Message = "one or more test failed";
+      m_Message = "one or more process failed";
     }
 
     m_Success = all_pass;

@@ -7,7 +7,8 @@ std::vector<Glib::RefPtr<Gtk::Widget>> DiskPage::get() {
 
   for (auto i : Disk::list()) {
     auto disk = ListButton<Disk>::create(
-        "drive-harddisk", i.size() + " " + i.label(), i.path(), i);
+        "drive-harddisk", (i.label().size() ? i.label() : i.uuid()),
+        "Size: " + i.size() + "\tPath: " + i.path(), i);
     list.push_back(disk);
   }
   return list;

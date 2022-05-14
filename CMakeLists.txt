@@ -12,6 +12,7 @@ include(gettextUtils)
 include(glibUtils)
 
 find_package(GTKMM)
+find_package(HANDY)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_definitions(-DDEBUG)

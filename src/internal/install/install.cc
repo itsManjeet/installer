@@ -6,12 +6,12 @@
 #include "system-image/system-image.hh"
 
 std::vector<std::shared_ptr<Process>> Install::list(InstallData* data) {
-  std::vector<std::shared_ptr<Process>> res;
-
-  res.push_back(std::make_shared<Prepare>(data));
-  res.push_back(std::make_shared<SystemImage>(data));
-  res.push_back(std::make_shared<Kernel>(data));
-  res.push_back(std::make_shared<Bootloader>(data));
+  std::vector<std::shared_ptr<Process>> res = {
+      std::make_shared<Prepare>(data),
+      std::make_shared<SystemImage>(data),
+      std::make_shared<Kernel>(data),
+      std::make_shared<Bootloader>(data),
+  };
 
   return res;
 }

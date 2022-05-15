@@ -57,6 +57,7 @@ class ListButton : public Gtk::Box {
 class ListBox : public Gtk::ScrolledWindow {
  private:
   Gtk::ListBox m_ListBox;
+  Gtk::Frame m_Frame;
 
  protected:
   void header_func(Gtk::ListBoxRow* row, Gtk::ListBoxRow* after);

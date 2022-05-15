@@ -3,7 +3,9 @@
 ListBox::ListBox() {
   property_propagate_natural_height() = true;
   m_ListBox.set_header_func(sigc::mem_fun(*this, &ListBox::header_func));
-  add(m_ListBox);
+  add(m_Frame);
+
+  m_Frame.add(m_ListBox);
 }
 
 void ListBox::clear() {

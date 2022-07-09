@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "config.h"
+#include "../../../logging.hh"
 
 bool SystemInfoCheckup::process() {  
   if (std::filesystem::exists(ISO_PATH "version")) {
@@ -14,9 +15,11 @@ bool SystemInfoCheckup::process() {
 
     m_Data->version(version);
     m_Mesg = "found system version '" + version + "'";
+    LOG << m_Mesg << std::endl;
     return true;
   }
   m_Data->version("2200");
   m_Mesg = "InternalError! no system version found";
+  ERROR << m_Mesg << std::endl;
   return false;
 }

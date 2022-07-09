@@ -3,9 +3,11 @@
 #include <filesystem>
 
 #include "../../../disk/disk.hh"
+#include "../../../logging.hh"
 #include "../../../utils/exec.hh"
 
 bool Bootloader::process() {
+  LOG << "installing bootloader" << std::endl;
   if (m_Data->isEfi()) {
     std::string efiDir = m_Data->workDir() + "/boot/efi";
     std::error_code err;
@@ -13,6 +15,7 @@ bool Bootloader::process() {
     std::filesystem::create_directory(efiDir, err);
     if (err) {
       m_Mesg = "Failed to prepare EFI dir, " + err.message();
+      ERROR << m_Mesg << std::endl;
       return false;
     }
 
@@ -20,6 +23,7 @@ bool Bootloader::process() {
         Exec::output(("mount " + m_Data->bootDevice() + " " + efiDir).c_str());
     if (status != 0) {
       m_Mesg = "Failed to prepare EFI mount, " + output;
+      ERROR << m_Mesg << std::endl;
       return false;
     }
   }
@@ -31,6 +35,7 @@ bool Bootloader::process() {
           .c_str());
   if (status != 0) {
     m_Mesg = "Failed to install bootloader, " + output;
+    ERROR << m_Mesg << std::endl;
     return false;
   }
 
@@ -53,6 +58,7 @@ menuentry 'rlxos [inital-setup]' {
     auto [status, output] = Exec::output("uname -r");
     if (status != 0) {
       m_Mesg = "Failed to get kernel version," + output;
+      ERROR << m_Mesg << std::endl;
       return false;
     }
 
@@ -65,6 +71,7 @@ menuentry 'rlxos [inital-setup]' {
   if (grub_cfg == nullptr) {
     m_Mesg =
         "Failed to write grub configuration, " + std::string(strerror(errno));
+    ERROR << m_Mesg << std::endl;
     return false;
   }
 
@@ -76,5 +83,6 @@ menuentry 'rlxos [inital-setup]' {
   fclose(grub_cfg);
 
   m_Mesg = "configured bootloader";
+  LOG << m_Mesg << std::endl;
   return true;
 }

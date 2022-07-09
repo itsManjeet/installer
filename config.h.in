@@ -10,6 +10,7 @@
 #define MINIMUM_MEMORY 1073741824
 #define MINIMUM_DISKSPACE 5368709120
 #define ISO_PATH "/run/iso/"
+#define LOGFILE "/tmp/installer.log"
 
 #ifdef DEBUG
 #define DATA_DIR "@DATA_DIR@"

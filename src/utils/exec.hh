@@ -4,13 +4,16 @@
 #include <string>
 #include <tuple>
 
+#include "../logging.hh"
+
 class Exec {
  public:
   static std::tuple<int, std::string> output(const char* cmd) {
     std::array<char, 128> buffer;
     std::string result;
 
-    auto pipe = popen(cmd, "r");  // get rid of shared_ptr
+    auto pipe = popen((std::string(cmd) + " 2>&1").c_str(),
+                      "r");  // get rid of shared_ptr
 
     if (!pipe) throw std::runtime_error("popen() failed!");
 

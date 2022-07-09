@@ -36,7 +36,7 @@ void Header::on_update_title(std::string title, std::string subtitle) {
   // set_subtitle(subtitle);
 }
 
-void Header::on_helpbtn_clicked() { system("xdg-open " HELP_URL); }
+void Header::on_helpbtn_clicked() { system("xdg-open " HELP_URL " &"); }
 
 void Header::on_nextbtn_clicked() { m_type_signal_next.emit(); }
 void Header::on_backbtn_clicked() { m_type_signal_back.emit(); }

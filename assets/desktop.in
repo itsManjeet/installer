@@ -5,5 +5,5 @@ GenericName=@PROJECT_NAME@
 Comment=Application
 Icon=@APP_ID@
 StartupNotify=true
-Exec=@PROJECT_NAME@
+Exec=/bin/pkexec /usr/bin/@PROJECT_NAME@
 Categories=GNOME;GTK;

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<gresources>
-    <gresource prefix="@APP_PREFIX@">
-        <file>icons/scalable/icon.svg</file>
-    </gresource>
-</gresources>

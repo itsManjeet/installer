@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=@PROJECT_NAME@
-GenericName=@PROJECT_NAME@
-Comment=Application
-Icon=@APP_ID@
-StartupNotify=true
-Exec=/bin/pkexec /usr/bin/@PROJECT_NAME@
-Categories=GNOME;GTK;

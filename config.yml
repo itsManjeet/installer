@@ -1,0 +1,9 @@
+root: /dev/loop0
+boot: /dev/loop0
+locale: en_IN.UTF-8
+timezone: Asia/Kolkata
+system-image: /home/itsmanjeet/installer/ROOTFS.IMG
+is-efi: false
+users:
+  - name: itsmanjeet
+    password: itsmanjeet

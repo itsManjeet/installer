@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 
@@ -34,7 +33,7 @@ func (i *Installer) Verify(p progress.ProgressBar) error {
 
 	if len(i.Kernel) == 0 {
 		p.Update(40, "detecting kernel version")
-		if data, err := getOutput("uname -r"); err != nil {
+		if data, err := getOutput("uname", "-r"); err != nil {
 			p.Update(100, "failed to get kernel version")
 			return err
 		} else {
@@ -63,7 +62,7 @@ func (i *Installer) Verify(p progress.ProgressBar) error {
 	}
 
 	p.Update(50, "getting root device uuid")
-	if data, err := exec.Command("lsblk", "-n", "-o", "uuid", i.Root).CombinedOutput(); err != nil {
+	if data, err := getOutput("lsblk", "-n", "-o", "uuid", i.Root); err != nil {
 		p.Update(100, fmt.Sprintf("failed to get device uuid %s, %s", data, err))
 		return err
 	} else {

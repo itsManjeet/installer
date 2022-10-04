@@ -119,7 +119,7 @@ func (i *Installer) Install(p progress.ProgressBar) error {
 	}
 
 	p.Update(95, "configurating timezone")
-	if err := os.Link(path.Join("/", "usr", "share", "zoneinfo", i.TimeZone), path.Join(sysroot, "etc", "localtime")); err != nil {
+	if err := os.Symlink(path.Join("/", "usr", "share", "zoneinfo", i.TimeZone), path.Join(sysroot, "etc", "localtime")); err != nil {
 		p.Update(95, fmt.Sprintf("failed to configure time zone %s", err))
 	}
 

@@ -15,5 +15,5 @@ menuentry 'rlxos [inital-setup]' {
   insmod ext2
   linux /boot/vmlinuz-%s root=UUID=%s quiet splash fastboot
   initrd /boot/initrd-%s
-})
+}
 `

@@ -49,6 +49,12 @@ func (i *Installer) Install(p progress.ProgressBar) error {
 		return err
 	}
 
+	p.Update(55, "generating initramfs")
+	if output, err := exec.Command("mkinitramfs", "-u", "--no-plymouth", "-o="+path.Join(i.Workdir, "boot", "initrd-"+i.Kernel)).CombinedOutput(); err != nil {
+		p.Update(100, fmt.Sprintf("failed to install initramfs %s, %s", output, err))
+		return err
+	}
+
 	p.Update(60, "installing bootloader")
 	bootCommand := []string{"--root-directory=" + sysroot, "--boot-directory=" + bootdir, "--recheck"}
 	if i.IsEfi {
@@ -80,12 +86,12 @@ func (i *Installer) Install(p progress.ProgressBar) error {
 	userId := 1000
 	for count, user := range i.Users {
 		userId += count
-		passwd, err := exec.Command("openssl", "passwd", "-1", user.Password).CombinedOutput()
+		passwd, err := getOutput("openssl", "passwd", "-1", user.Password)
 		if err != nil {
 			p.Update(100, fmt.Sprintf("failed to calculate password hash %s, %s", passwd, err))
 			return err
 		}
-		if data, err := exec.Command("useradd", "-R", i.Workdir, "-p", string(passwd), "-G", "adm", "-g", "user", user.Name).CombinedOutput(); err != nil {
+		if data, err := exec.Command("useradd", "-R", sysroot, "-p", string(passwd), "-G", "adm", "-g", "users", user.Name).CombinedOutput(); err != nil {
 			p.Update(100, fmt.Sprintf("failed to create new user %s, %s", data, err))
 			return err
 		}
@@ -108,7 +114,7 @@ func (i *Installer) Install(p progress.ProgressBar) error {
 	if checkExists(localepath) != nil {
 		os.MkdirAll(localepath, 0755)
 	}
-	if output, err := exec.Command("localedef", "-i", split[0], "-f", split[1], i.Locale, "--prefix="+localepath).CombinedOutput(); err != nil {
+	if output, err := exec.Command("localedef", "-i", split[0], "-f", split[1], i.Locale, "--prefix="+sysroot).CombinedOutput(); err != nil {
 		p.Update(90, fmt.Sprintf("failed to generate locale %s, %s", output, err))
 	}
 
@@ -118,11 +124,11 @@ func (i *Installer) Install(p progress.ProgressBar) error {
 	}
 
 	p.Update(98, "generating machine id")
-	uuid, err := exec.Command("uuidgen").CombinedOutput()
+	uuid, err := getOutput("uuidgen")
 	if err != nil {
 		p.Update(98, fmt.Sprintf("failed to generate machine id %s, %s", uuid, err))
 	} else {
-		ioutil.WriteFile(path.Join(sysroot, "etc", "machine-id"), uuid, 0644)
+		ioutil.WriteFile(path.Join(sysroot, "etc", "machine-id"), []byte(uuid), 0644)
 	}
 
 	p.Update(100, "installation success")

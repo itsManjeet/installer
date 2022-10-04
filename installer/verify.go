@@ -34,16 +34,16 @@ func (i *Installer) Verify(p progress.ProgressBar) error {
 
 	if len(i.Kernel) == 0 {
 		p.Update(40, "detecting kernel version")
-		if data, err := exec.Command("uname", "-r").CombinedOutput(); err != nil {
+		if data, err := getOutput("uname -r"); err != nil {
 			p.Update(100, "failed to get kernel version")
 			return err
 		} else {
-			i.Kernel = string(data)
+			i.Kernel = data
 		}
 	}
 
 	p.Update(40, "verifying kernel and modules")
-	if err := checkExists(path.Join("boot", "modules", i.Kernel)); err != nil {
+	if err := checkExists(path.Join("/boot", "modules", i.Kernel)); err != nil {
 		p.Update(100, "missing required kernel "+i.Kernel)
 		return err
 	}
